@@ -229,13 +229,13 @@ namespace OpenRA.Mods.Common.Widgets
 			}
 
 			var worldPixel = worldRenderer.Viewport.ViewToWorldPx(Viewport.LastMousePos);
-			var underCursor = world.ScreenMap.ActorsAt(worldPixel)
-				.Where(a => a.Info.HasTraitInfo<ITooltipInfo>() && !world.FogObscures(a))
+			var underCursor = world.ScreenMap.ActorsAtMouse(worldPixel)
+				.Where(a => a.Actor.Info.HasTraitInfo<ITooltipInfo>() && !world.FogObscures(a.Actor))
 				.WithHighestSelectionPriority(worldPixel);
 
 			if (underCursor != null)
 			{
-				ActorTooltip = underCursor.TraitsImplementing<ITooltip>().FirstOrDefault(Exts.IsTraitEnabled);
+				ActorTooltip = underCursor.TraitsImplementing<ITooltip>().FirstEnabledTraitOrDefault();
 				if (ActorTooltip != null)
 				{
 					ActorTooltipExtra = underCursor.TraitsImplementing<IProvideTooltipInfo>().ToArray();
@@ -245,7 +245,7 @@ namespace OpenRA.Mods.Common.Widgets
 				return;
 			}
 
-			var frozen = world.ScreenMap.FrozenActorsAt(world.RenderPlayer, worldPixel)
+			var frozen = world.ScreenMap.FrozenActorsAtMouse(world.RenderPlayer, worldPixel)
 				.Where(a => a.TooltipInfo != null && a.IsValid)
 				.WithHighestSelectionPriority(worldPixel);
 

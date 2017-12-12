@@ -10,9 +10,7 @@
 ^SpriteActor:
 	BodyOrientation:
 	QuantizeFacingsFromSequence:
-	AutoSelectionSize:
 	RenderSprites:
-	AutoRenderSize:
 
 ^1x1Shape:
 	HitShape:
@@ -329,7 +327,8 @@
 	SelectionDecorations:
 	WithSpriteControlGroupDecoration:
 	Selectable:
-		Bounds: 12,18,0,-8
+		Bounds: 18,20,0,-6
+		DecorationBounds: 12,18,0,-8
 	Targetable:
 		TargetTypes: Ground, Infantry, Disguise
 		RequiresCondition: !parachute
@@ -662,6 +661,7 @@
 	Inherits@1: ^ExistsInWorld
 	Inherits@2: ^SpriteActor
 	Inherits@shape: ^1x1Shape
+	Interactable:
 	Building:
 		Dimensions: 1,1
 		Footprint: x
@@ -773,8 +773,6 @@
 	-Selectable:
 	SelectionDecorations:
 		RenderSelectionBars: False
-	CustomSelectionSize:
-		CustomBounds: 24,24
 	Health:
 		HP: 10
 	Explodes:
@@ -787,8 +785,9 @@
 		Type: Light
 	EditorTilesetFilter:
 		Categories: Decoration
-	CustomRenderSize:
-		CustomBounds: 24,24
+	Interactable:
+		Bounds: 24,24
+	Interactable:
 
 ^CivBuilding:
 	Inherits: ^TechBuilding
@@ -822,10 +821,12 @@
 	-Demolishable:
 	EditorTilesetFilter:
 		ExcludeTilesets: INTERIOR
+	Interactable:
 
 ^Tree:
 	Inherits@1: ^SpriteActor
 	Inherits@shape: ^1x1Shape
+	Interactable:
 	Tooltip:
 		Name: Tree
 		ShowOwnerRow: false
@@ -867,6 +868,7 @@
 
 ^TreeHusk:
 	Inherits@1: ^SpriteActor
+	Interactable:
 	RenderSprites:
 		Palette: terrain
 	AppearsOnRadar:
@@ -884,6 +886,7 @@
 
 ^BasicHusk:
 	Inherits@1: ^SpriteActor
+	Interactable:
 	Health:
 		HP: 280
 	Armor:
@@ -959,6 +962,7 @@
 ^Bridge:
 	Inherits@shape: ^1x1Shape
 	AlwaysVisible:
+	Interactable:
 	Tooltip:
 		Name: Bridge
 		ShowOwnerRow: false
@@ -968,8 +972,6 @@
 	Building:
 		Footprint: ____ ____
 		Dimensions: 4,2
-	CustomSelectionSize:
-		CustomBounds: 96,48
 	Health:
 		HP: 1000
 	Armor:
@@ -977,11 +979,12 @@
 	ScriptTriggers:
 	BodyOrientation:
 		QuantizedFacings: 1
-	CustomRenderSize:
-		CustomBounds: 96,48
+	Interactable:
+		Bounds: 96,48
 
 ^Rock:
 	Inherits@1: ^SpriteActor
+	Interactable:
 	Tooltip:
 		Name: Rock
 		ShowOwnerRow: false
@@ -1009,6 +1012,7 @@
 
 ^Crate:
 	Inherits@1: ^SpriteActor
+	Interactable:
 	HiddenUnderFog:
 	Tooltip:
 		Name: Crate
@@ -1042,6 +1046,7 @@
 
 ^Mine:
 	Inherits: ^SpriteActor
+	Interactable:
 	WithSpriteBody:
 	HiddenUnderFog:
 	Mine:

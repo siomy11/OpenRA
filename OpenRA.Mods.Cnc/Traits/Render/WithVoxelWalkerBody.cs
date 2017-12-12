@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using OpenRA.Graphics;
 using OpenRA.Mods.Common;
@@ -22,8 +23,7 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Cnc.Traits.Render
 {
-	public class WithVoxelWalkerBodyInfo : ITraitInfo, IRenderActorPreviewVoxelsInfo,  Requires<RenderVoxelsInfo>, Requires<IMoveInfo>, Requires<IFacingInfo>,
-		IAutoSelectionSizeInfo, IAutoRenderSizeInfo
+	public class WithVoxelWalkerBodyInfo : ITraitInfo, IRenderActorPreviewVoxelsInfo,  Requires<RenderVoxelsInfo>, Requires<IMoveInfo>, Requires<IFacingInfo>
 	{
 		public readonly string Sequence = "idle";
 
@@ -47,12 +47,14 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 		}
 	}
 
-	public class WithVoxelWalkerBody : IAutoSelectionSize, ITick, IActorPreviewInitModifier, IAutoRenderSize
+	public class WithVoxelWalkerBody : ITick, IActorPreviewInitModifier, IAutoMouseBounds
 	{
 		readonly WithVoxelWalkerBodyInfo info;
 		readonly IMove movement;
 		readonly IFacing facing;
-		readonly int2 size;
+		readonly ModelAnimation modelAnimation;
+		readonly RenderVoxels rv;
+
 		int oldFacing;
 		uint tick, frame, frames;
 
@@ -63,22 +65,16 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 			facing = self.Trait<IFacing>();
 
 			var body = self.Trait<BodyOrientation>();
-			var rv = self.Trait<RenderVoxels>();
+			rv = self.Trait<RenderVoxels>();
 
 			var model = self.World.ModelCache.GetModelSequence(rv.Image, info.Sequence);
 			frames = model.Frames;
-			rv.Add(new ModelAnimation(model, () => WVec.Zero,
+			modelAnimation = new ModelAnimation(model, () => WVec.Zero,
 				() => new[] { body.QuantizeOrientation(self, self.Orientation) },
-				() => false, () => frame, info.ShowShadow));
+				() => false, () => frame, info.ShowShadow);
 
-			// Selection size
-			var rvi = self.Info.TraitInfo<RenderVoxelsInfo>();
-			var s = (int)(rvi.Scale * model.Size.Aggregate(Math.Max));
-			size = new int2(s, s);
+			rv.Add(modelAnimation);
 		}
-
-		int2 IAutoSelectionSize.SelectionSize(Actor self) { return size; }
-		int2 IAutoRenderSize.RenderSize(Actor self) { return size; }
 
 		void ITick.Tick(Actor self)
 		{
@@ -97,6 +93,11 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 		void IActorPreviewInitModifier.ModifyActorPreviewInit(Actor self, TypeDictionary inits)
 		{
 			inits.Add(new BodyAnimationFrameInit(frame));
+		}
+
+		Rectangle IAutoMouseBounds.AutoMouseoverBounds(Actor self, WorldRenderer wr)
+		{
+			return modelAnimation.ScreenBounds(self.CenterPosition, wr, rv.Info.Scale);
 		}
 	}
 

@@ -96,13 +96,20 @@ namespace OpenRA.Traits
 	public interface ITick { void Tick(Actor self); }
 	[RequireExplicitImplementation]
 	public interface ITickRender { void TickRender(WorldRenderer wr, Actor self); }
-	public interface IRender { IEnumerable<IRenderable> Render(Actor self, WorldRenderer wr); }
+	public interface IRender
+	{
+		IEnumerable<IRenderable> Render(Actor self, WorldRenderer wr);
+		IEnumerable<Rectangle> ScreenBounds(Actor self, WorldRenderer wr);
+	}
 
-	public interface IAutoSelectionSizeInfo : ITraitInfoInterface { }
-	public interface IAutoSelectionSize { int2 SelectionSize(Actor self); }
+	// TODO: Replace Rectangle with an int2[] polygon
+	public interface IMouseBounds { Rectangle MouseoverBounds(Actor self, WorldRenderer wr); }
+	public interface IMouseBoundsInfo : ITraitInfoInterface { }
+	public interface IAutoMouseBounds { Rectangle AutoMouseoverBounds(Actor self, WorldRenderer wr); }
 
-	public interface IAutoRenderSizeInfo : ITraitInfoInterface { }
-	public interface IAutoRenderSize { int2 RenderSize(Actor self); }
+	// HACK: This provides a shim for legacy code until it can be rewritten
+	public interface IDecorationBounds { Rectangle DecorationBounds(Actor self, WorldRenderer wr); }
+	public interface IDecorationBoundsInfo : ITraitInfoInterface { }
 
 	public interface IIssueOrder
 	{
@@ -146,11 +153,6 @@ namespace OpenRA.Traits
 	public interface INotifyActorDisposing { void Disposing(Actor self); }
 	public interface INotifyOwnerChanged { void OnOwnerChanged(Actor self, Player oldOwner, Player newOwner); }
 	public interface INotifyEffectiveOwnerChanged { void OnEffectiveOwnerChanged(Actor self, Player oldEffectiveOwner, Player newEffectiveOwner); }
-
-	public interface ISelectionDecorationsInfo : ITraitInfoInterface
-	{
-		int[] SelectionBoxBounds { get; }
-	}
 
 	public interface IVoiced
 	{
@@ -250,7 +252,15 @@ namespace OpenRA.Traits
 		IEnumerable<Actor> ActorsInBox(WPos a, WPos b);
 	}
 
-	public interface IRenderModifier { IEnumerable<IRenderable> ModifyRender(Actor self, WorldRenderer wr, IEnumerable<IRenderable> r); }
+	public interface IRenderModifier
+	{
+		IEnumerable<IRenderable> ModifyRender(Actor self, WorldRenderer wr, IEnumerable<IRenderable> r);
+
+		// HACK: This is here to support the WithShadow trait.
+		// That trait should be rewritten using standard techniques, and then this interface method removed
+		IEnumerable<Rectangle> ModifyScreenBounds(Actor self, WorldRenderer wr, IEnumerable<Rectangle> r);
+	}
+
 	public interface ILoadsPalettes { void LoadPalettes(WorldRenderer wr); }
 	public interface ILoadsPlayerPalettes { void LoadPlayerPalettes(WorldRenderer wr, string playerName, HSLColor playerColor, bool replaceExisting); }
 	public interface IPaletteModifier { void AdjustPalette(IReadOnlyDictionary<string, MutablePalette> b); }

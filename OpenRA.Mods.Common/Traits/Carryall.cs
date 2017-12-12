@@ -61,6 +61,7 @@ namespace OpenRA.Mods.Common.Traits
 		[Sync] public Actor Carryable { get; private set; }
 		public CarryallState State { get; private set; }
 
+		int cachedFacing;
 		IActorPreview[] carryablePreview = null;
 
 		/// <summary>Offset between the carryall's and the carried actor's CenterPositions</summary>
@@ -84,6 +85,15 @@ namespace OpenRA.Mods.Common.Traits
 			// Cargo may be killed in the same tick as, but after they are attached
 			if (Carryable != null && Carryable.IsDead)
 				DetachCarryable(self);
+
+			// HACK: We don't have an efficient way to know when the preview
+			// bounds change, so assume that we need to update the screen map
+			// (only) when the facing changes
+			if (facing.Facing != cachedFacing && carryablePreview != null)
+			{
+				self.World.ScreenMap.AddOrUpdate(self);
+				cachedFacing = facing.Facing;
+			}
 		}
 
 		void INotifyActorDisposing.Disposing(Actor self)
@@ -126,6 +136,7 @@ namespace OpenRA.Mods.Common.Traits
 
 			Carryable = carryable;
 			State = CarryallState.Carrying;
+			self.World.ScreenMap.AddOrUpdate(self);
 
 			CarryableOffset = OffsetForCarryable(self, carryable);
 			return true;
@@ -134,6 +145,7 @@ namespace OpenRA.Mods.Common.Traits
 		public virtual void DetachCarryable(Actor self)
 		{
 			UnreserveCarryable(self);
+			self.World.ScreenMap.AddOrUpdate(self);
 
 			carryablePreview = null;
 			CarryableOffset = WVec.Zero;
@@ -190,6 +202,17 @@ namespace OpenRA.Mods.Common.Traits
 				foreach (var r in previewRenderables)
 					yield return r;
 			}
+		}
+
+		IEnumerable<Rectangle> IRender.ScreenBounds(Actor self, WorldRenderer wr)
+		{
+			if (carryablePreview == null)
+				yield break;
+
+			var pos = self.CenterPosition;
+			foreach (var p in carryablePreview)
+				foreach (var b in p.ScreenBounds(wr, pos))
+					yield return b;
 		}
 
 		IEnumerable<IOrderTargeter> IIssueOrder.Orders

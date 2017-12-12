@@ -11,24 +11,20 @@
 
 using System;
 using System.Linq;
-using OpenRA.Mods.Common.Traits;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Lint
 {
-	class CheckTooltips : ILintRulesPass
+	public class CheckConflictingMouseBounds : ILintRulesPass
 	{
 		public void Run(Action<string> emitError, Action<string> emitWarning, Ruleset rules)
 		{
 			foreach (var actorInfo in rules.Actors)
 			{
-				var buildable = actorInfo.Value.TraitInfoOrDefault<BuildableInfo>();
-				if (buildable == null)
-					continue;
-
-				var tooltip = actorInfo.Value.TraitInfos<TooltipInfo>().FirstOrDefault(info => info.EnabledByDefault);
-				if (tooltip == null)
-					emitError("The following buildable actor has no (enabled) Tooltip: " + actorInfo.Key);
+				var selectable = actorInfo.Value.TraitInfos<SelectableInfo>().Count();
+				var interactable = actorInfo.Value.TraitInfos<InteractableInfo>().Count();
+				if (selectable > 0 && selectable != interactable)
+					emitWarning("Actor {0} defines both Interactable and Selectable traits. This may cause unexpected results.".F(actorInfo.Value.Name));
 			}
 		}
 	}
